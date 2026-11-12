@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f3f4f8">
+<title>Taskly — Pengingat Tugas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f4f8;--card:#fff;--ink:#15171c;--mut:#737b8c;--line:#e7e9f0;--field:#eceef4;--red:#d64045;--rbg:#fdeceb;--green:#2f9e6a;--ac:#3b5bdb;--sh:0 1px 2px rgba(20,24,40,.05),0 8px 24px rgba(20,24,40,.06)}
+[data-theme=dark]{color-scheme:dark;--bg:#1c1f26;--card:#262a33;--ink:#e9ecf2;--mut:#9aa2b2;--line:#353a46;--field:#303541;--red:#ff8d88;--rbg:rgba(255,141,136,.14);--green:#4fc68c;--sh:0 1px 2px rgba(0,0,0,.25),0 8px 24px rgba(0,0,0,.28)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;transition:background-color .35s ease,color .35s ease,border-color .35s ease,box-shadow .3s ease,transform .25s cubic-bezier(.2,.8,.2,1),opacity .25s ease}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font:500 15px/1.45 "Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;letter-spacing:-.01em;overscroll-behavior-y:none}
+button,input,select,textarea{font:inherit;color:inherit;letter-spacing:inherit}
+button{background:none;border:0;padding:0;cursor:pointer}
+input,select,textarea{width:100%;background:var(--field);border:0;border-radius:14px;padding:12px 14px;outline:none}
+input:focus,select:focus,textarea:focus{box-shadow:0 0 0 2px var(--ac)}
+textarea{resize:vertical;min-height:72px}
+svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+[data-i]{display:grid;place-items:center}
+.hide{display:none!important}
+.app{max-width:680px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 22px) 18px calc(124px + env(safe-area-inset-bottom))}
+.pg{display:none}.pg.on{display:block;animation:in .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+.head{margin:2px 0 18px}
+h1{margin:0;font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-.03em}
+.sub{margin:3px 0 0;color:var(--mut);font-size:14px}
+.card{background:var(--card);border-radius:16px;box-shadow:var(--sh)}
+.ibtn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--card);box-shadow:var(--sh)}
+.search{display:flex;align-items:center;gap:8px;height:46px;padding:0 14px;border-radius:16px;background:var(--card);box-shadow:var(--sh);color:var(--mut);margin-bottom:12px}
+.search input{background:none;box-shadow:none;padding:0;height:100%;color:var(--ink)}
+.search [data-i] svg{width:19px;height:19px}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -18px 14px;padding:2px 18px 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:9px 15px;border-radius:99px;background:var(--card);box-shadow:var(--sh);font-size:13.5px;font-weight:600;color:var(--mut)}
+.chip.on{background:var(--ac);color:#fff}
+.grp{margin-top:20px}
+.gh{display:flex;align-items:center;gap:6px;width:100%;padding:4px 2px 10px;font-size:16px;font-weight:700;text-align:left}
+.gh small{font-size:13px;font-weight:600;color:var(--mut)}
+.gh svg{margin-left:auto;width:18px;height:18px;color:var(--mut)}
+.grp.closed .gh svg{transform:rotate(-90deg)}
+.grp.closed .gl{display:none}
+.gh.late{color:var(--red)}
+.gl{display:grid;gap:10px}
+.t{position:relative;display:flex;align-items:flex-start;gap:12px;padding:14px 12px 14px 14px;background:var(--card);border-radius:16px;box-shadow:var(--sh);touch-action:pan-y;user-select:none}
+.t.drag{transition:none}
+.t.done{opacity:.6}
+.t.done .tt{text-decoration:line-through;color:var(--mut)}
+.bd{flex:1;min-width:0;cursor:pointer;padding-top:1px}
+.tt{font-size:15.5px;font-weight:650;word-break:break-word}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:5px 9px;margin-top:5px;font-size:12.5px;color:var(--mut)}
+.tag{padding:3px 9px;border-radius:99px;background:var(--field);font-size:11.5px;font-weight:700;color:var(--mut)}
+.tag.late{background:var(--rbg);color:var(--red)}
+.ck{flex:none;width:26px;height:26px;margin-top:-1px;border-radius:50%;border:2px solid var(--mut);display:grid;place-items:center;color:#fff}
+.ck svg{width:14px;height:14px;stroke-width:3;opacity:0}
+.ck.on{background:var(--green);border-color:var(--green)}
+.ck.on svg{opacity:1}
+.star{flex:none;width:34px;height:34px;display:grid;place-items:center;color:var(--mut);margin:-4px -4px 0 0}
+.star svg{width:20px;height:20px}
+.star.on{color:#f0a020}
+.star.on svg{fill:#f0a020}
+.bar{height:6px;margin-top:8px;border-radius:99px;background:var(--field);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--ac);transition:width .45s ease}
+.more{margin-top:6px;font-size:12.5px;font-weight:600;color:var(--ac)}
+.sl{margin-top:4px}
+.si{display:flex;align-items:center;gap:10px;width:100%;padding:6px 0;text-align:left;font-size:14px}
+.si .ck{width:20px;height:20px;margin:0;border-width:1.5px}
+.si .ck svg{width:12px;height:12px}
+.si.on span:last-child{text-decoration:line-through;color:var(--mut)}
+.nt{margin:8px 0 0;color:var(--mut);font-size:13.5px;white-space:pre-line}
+.ph{display:block;width:100%;max-height:170px;object-fit:cover;border-radius:12px;margin-top:10px;cursor:zoom-in}
+.grpi{margin-top:8px;font-size:13px;color:var(--mut)}
+.grpi button{margin-left:6px;color:var(--ac);font-weight:600}
+.empty{padding:40px 14px;text-align:center;color:var(--mut)}
+.empty b{display:block;margin:6px 0 4px;font-size:16px;color:var(--ink)}
+.empty svg{width:30px;height:30px;color:var(--ac)}
+.cal{padding:12px 10px 10px;border-radius:20px;background:var(--card);box-shadow:var(--sh);touch-action:pan-y;user-select:none}
+.calh{display:flex;align-items:center;justify-content:space-between;padding:0 4px 10px}
+.calh b{font-size:16px}
+.calh .ibtn{width:34px;height:34px}
+.calh svg{width:18px;height:18px}
+.wk,.grid{display:grid;grid-template-columns:repeat(7,1fr);text-align:center}
+.wk{font-size:12px;font-weight:600;color:var(--mut);padding-bottom:6px}
+.grid{row-gap:3px}
+.dy{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:46px;border-radius:14px;font-size:15px;font-weight:600}
+.dy.out{opacity:.4}
+.dy.today:not(.sel){box-shadow:inset 0 0 0 1.5px var(--ac);color:var(--ac)}
+.dy.sel{background:var(--ac);color:#fff}
+.dots{display:flex;gap:3px;height:5px}
+.dots i{width:5px;height:5px;border-radius:50%;background:var(--ac)}
+.dy.sel .dots i{background:#fff!important}
+.cexp{display:block;width:100%;margin-top:8px;padding:8px;font-size:13px;font-weight:600;color:var(--ac)}
+.dh{margin:22px 2px 10px;font-size:16px;font-weight:700}
+.fsel{margin-bottom:4px}
+.ring{position:relative;width:260px;height:260px;margin:14px auto 6px}
+.ring svg{width:260px;height:260px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:12;stroke-linecap:round}
+.ring .tr{stroke:var(--field)}
+.ring .pr{stroke:var(--ac);transition:stroke-dashoffset .9s linear}
+.clock{position:absolute;inset:0;display:grid;place-items:center;font-size:54px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.ctl{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 22px}
+.btnp{display:block;width:100%;padding:15px;border-radius:16px;background:var(--ac);color:#fff;font-weight:700;font-size:16px;text-align:center}
+.btng{display:block;width:100%;padding:15px;border-radius:16px;background:var(--field);font-weight:700;font-size:16px;text-align:center}
+.btng.mini{width:auto;padding:9px 14px;font-size:14px}
+.dng{color:var(--red)}
+.btnp:active,.btng:active,.fab:active{transform:scale(.97)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sc{padding:14px 15px;border-radius:16px;background:var(--card);box-shadow:var(--sh)}
+.sc b{display:block;font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.sc span{font-size:13px;color:var(--mut)}
+.ch{margin-top:10px;padding:16px}
+.chh{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chh b{font-size:16px}
+.seg{display:flex;gap:3px;padding:3px;border-radius:12px;background:var(--field)}
+.seg button{padding:7px 11px;border-radius:10px;font-size:13px;font-weight:600;color:var(--mut)}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.chart{display:flex;gap:6px;margin-top:14px}
+.col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px}
+.col b{height:14px;font-size:11.5px;font-weight:700}
+.bw{display:flex;align-items:flex-end;justify-content:center;width:100%;height:110px}
+.bw i{width:70%;max-width:30px;min-height:4px;border-radius:8px 8px 4px 4px;background:var(--ac)}
+.col small{font-size:11px;color:var(--mut);white-space:nowrap}
+.sec{margin:22px 2px 8px;font-size:15px;font-weight:700}
+.set{overflow:hidden;margin:0}
+.sr{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-top:1px solid var(--line)}
+.sr:first-child{border-top:0}
+.sr b{display:block;font-size:15px}
+.sr small{font-size:12.5px;color:var(--mut)}
+.sw{appearance:none;-webkit-appearance:none;flex:none;width:50px;height:30px;margin:0;padding:0;border-radius:99px;background:var(--field);position:relative;cursor:pointer;transition:background-color .3s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.sw:checked{background:var(--green)}
+.sw:checked::after{transform:translateX(20px)}
+.acc{display:flex;gap:14px;flex-wrap:wrap;padding:16px}
+.acc button{width:36px;height:36px;border-radius:50%;background:var(--c);outline:2.5px solid transparent;outline-offset:3px}
+.acc button.on{outline-color:var(--c)}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:1fr 1fr 86px 1fr 1fr;align-items:end;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--card) 86%,transparent);-webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%);border-top:1px solid var(--line)}
+.nv{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0 4px;font-size:11px;font-weight:600;color:var(--mut)}
+.nv.on{color:var(--ac)}
+.nv [data-i] svg{width:23px;height:23px}
+.fab{position:relative;top:-20px;justify-self:center;width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:var(--ac);color:#fff;box-shadow:0 10px 24px color-mix(in srgb,var(--ac) 40%,transparent)}
+.fab svg{width:28px;height:28px;stroke-width:2.6}
+.ov{position:fixed;inset:0;z-index:40;background:rgba(12,14,20,.38);opacity:0;pointer-events:none;transition:opacity .3s ease}
+.ov.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:50%;bottom:0;z-index:41;width:min(680px,100%);max-height:90vh;display:flex;flex-direction:column;padding:10px 18px calc(10px + env(safe-area-inset-bottom));border-radius:24px 24px 0 0;background:var(--card);box-shadow:0 -12px 40px rgba(0,0,0,.18);transform:translate(-50%,105%);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+.sheet.on{transform:translate(-50%,0)}
+.grab{width:40px;height:5px;margin:0 auto 10px;border-radius:9px;background:var(--line)}
+.sbody{overflow-y:auto;min-height:0;flex:1 1 auto;padding-bottom:4px}
+.shh{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.shh b{font-size:18px}
+.qt{font-size:19px;font-weight:700;padding:12px 4px;background:none;box-shadow:none;border-radius:0}
+.qt:focus{box-shadow:none}
+.pn{display:none;margin:4px 0 8px;padding:12px;border-radius:16px;background:var(--field)}
+.pn.on{display:block}
+.pn label,.fl{display:block;margin:10px 2px 6px;font-size:12.5px;font-weight:600;color:var(--mut)}
+.pn label:first-child{margin-top:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tb{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:10px 0;border-top:1px solid var(--line)}
+.tb::-webkit-scrollbar{display:none}
+.tb button,.tb label{flex:none;display:flex;align-items:center;gap:6px;padding:9px 13px;border-radius:99px;background:var(--field);font-size:13px;font-weight:600;color:var(--mut);cursor:pointer;white-space:nowrap}
+.tb [data-i] svg{width:17px;height:17px}
+.tb .on{background:color-mix(in srgb,var(--ac) 16%,transparent);color:var(--ac)}
+.sub-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:14px}
+.sub-row span{flex:1}
+.sub-row button{padding:2px 6px;font-size:20px;line-height:1;color:var(--red)}
+.cols{display:flex;flex-wrap:wrap;gap:10px}
+.cols button{width:30px;height:30px;border-radius:50%;background:var(--c);outline:2.5px solid transparent;outline-offset:2px}
+.cols button.on{outline-color:var(--c)}
+.pn .seg{margin-top:2px}
+.phw{position:relative;margin-bottom:8px}
+.phw img{display:block;width:100%;max-height:150px;object-fit:cover;border-radius:14px}
+.phw button{position:absolute;top:8px;right:8px;padding:6px 10px;border-radius:10px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:600}
+.dlg{position:fixed;left:50%;top:50%;z-index:51;width:min(340px,88vw);padding:26px 22px;border-radius:24px;background:var(--card);box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center;opacity:0;pointer-events:none;transform:translate(-50%,-46%) scale(.96);transition:opacity .3s,transform .4s cubic-bezier(.2,.8,.2,1)}
+.dlg.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}
+.bell{width:60px;height:60px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--ac) 16%,transparent);color:var(--ac)}
+.bell svg{width:28px;height:28px}
+.dlg.on .bell{animation:ring .9s ease-in-out infinite}
+@keyframes ring{0%,100%{transform:rotate(0)}25%{transform:rotate(12deg)}75%{transform:rotate(-12deg)}}
+.toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom));z-index:60;display:flex;align-items:center;gap:14px;padding:12px 18px;border-radius:99px;background:var(--ink);color:var(--bg);font-size:14px;font-weight:600;white-space:nowrap;opacity:0;pointer-events:none;transform:translate(-50%,14px)}
+.toast.on{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+.toast button{font-weight:700;color:var(--ac)}
+.vw{position:fixed;inset:0;z-index:70;display:none;place-items:center;background:rgba(0,0,0,.92)}
+.vw.on{display:grid}
+.vw img{max-width:94%;max-height:88vh;border-radius:14px}
+.vw .ibtn{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);color:#fff}
+#cf{position:fixed;inset:0;z-index:80;pointer-events:none}
+.head{padding-right:52px}
+.sb{position:fixed;top:calc(env(safe-area-inset-top) + 14px);right:16px;z-index:35}
+.sb-fab{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--ink);background:color-mix(in srgb,var(--card) 70%,transparent);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 6px 20px rgba(0,0,0,.12);transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.sb-fab:active{transform:scale(.88)}
+.sb.open .sb-fab{transform:scale(.94)}
+.sb-fab svg{width:20px;height:20px;stroke-width:2.6}
+.sb-menu{position:absolute;top:52px;right:0;width:244px;padding:6px;border-radius:24px;background:color-mix(in srgb,var(--card) 82%,transparent);-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 18px 48px rgba(0,0,0,.18);transform-origin:top right;transform:scale(.5);opacity:0;pointer-events:none;transition:transform .45s cubic-bezier(.34,1.4,.64,1),opacity .25s ease}
+.sb.open .sb-menu{transform:scale(1);opacity:1;pointer-events:auto}
+.sb-item{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:17px;color:var(--ink);text-decoration:none;opacity:0;transform:translateY(-8px) scale(.96);transition:opacity .3s ease,transform .45s cubic-bezier(.34,1.4,.64,1),background-color .2s ease;transition-delay:calc(var(--t) * 40ms)}
+.sb.open .sb-item{opacity:1;transform:none}
+.sb-item:active{background:var(--field)}
+.sb-ic{flex:none;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;color:#fff;box-shadow:inset 0 .5px 0 rgba(255,255,255,.35)}
+.sb-ic svg{width:19px;height:19px;stroke-width:2.2}
+.sb-tx{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.sb-tx b{font-size:15px;font-weight:650}
+.sb-tx small{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-chev{margin-left:auto;width:14px;height:14px;color:var(--mut);opacity:.6;stroke-width:2.4}
+@media(prefers-reduced-motion:reduce){.sb-item,.sb-menu{transition:none!important}}
+@media(min-width:720px){.app{padding-bottom:132px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<canvas id="cf"></canvas>
+<div class="sb" id="sb">
+  <button class="sb-fab" id="sbBtn" aria-expanded="false" aria-controls="sbMenu" aria-label="Media sosial">
+    <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="19" cy="12" r="1.8" fill="currentColor"/></svg>
+  </button>
+  <nav class="sb-menu" id="sbMenu" aria-label="Media sosial pemilik">
+    <a class="sb-item" href="https://www.instagram.com/USERNAME_IG" target="_blank" rel="noopener" style="--t:0">
+      <span class="sb-ic" style="background:linear-gradient(45deg,#feda75,#d62976 50%,#4f5bd5)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/></svg></span>
+      <span class="sb-tx"><b>Instagram</b><small>@USERNAME_IG</small></span>
+    </a>
+    <a class="sb-item" href="https://www.tiktok.com/@USERNAME_TT" target="_blank" rel="noopener" style="--t:1">
+      <span class="sb-ic" style="background:#111"><svg viewBox="0 0 24 24"><path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 3c.4 2.7 2.2 4.5 5 4.8"/></svg></span>
+      <span class="sb-tx"><b>TikTok</b><small>@USERNAME_TT</small></span>
+    </a>
+    <a class="sb-item" href="https://whatsapp.com/channel/CHANNEL_ID" target="_blank" rel="noopener" style="--t:2">
+      <span class="sb-ic" style="background:#25d366"><svg viewBox="0 0 24 24"><path d="M4 10v4a1 1 0 0 0 1 1h2l5 4V5L7 9H5a1 1 0 0 0-1 1z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M19 6a8 8 0 0 1 0 12"/></svg></span>
+      <span class="sb-tx"><b>Channel WhatsApp</b><small>Ikuti update terbaru</small></span>
+    </a>
+    <a class="sb-item" href="https://wa.me/62XXXXXXXXXX" target="_blank" rel="noopener" style="--t:3">
+      <span class="sb-ic" style="background:#25d366"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></span>
+      <span class="sb-tx"><b>WhatsApp</b><small>+62 XXX-XXXX-XXXX</small></span>
+    </a>
+    <a class="sb-item" href="https://PORTOFOLIO_URL" target="_blank" rel="noopener" style="--t:4">
+      <span class="sb-ic" style="background:var(--ac)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg></span>
+      <span class="sb-tx"><b>Portofolio</b><small>Lihat karya saya</small></span>
+    </a>
+  </nav>
+</div>
+<div class="app">
+  <section class="pg on" id="pTasks">
+    <header class="head"><h1>Tugas</h1><p class="sub" id="dateLbl"></p></header>
+    <label class="search"><span data-i="search"></span><input id="q" type="search" placeholder="Cari tugas, label, atau kelompok" autocomplete="off"></label>
+    <div class="chips" id="chips">
+      <button class="chip on" data-f="all">Semua</button>
+      <button class="chip" data-f="ind">Individu</button>
+      <button class="chip" data-f="grp">Kelompok</button>
+      <button class="chip" data-f="star">Penting</button>
+      <button class="chip" data-f="today">Hari ini</button>
+      <button class="chip" data-f="up">Mendatang</button>
+    </div>
+    <div id="groups"></div>
+  </section>
+
+  <section class="pg" id="pCal">
+    <header class="head"><h1>Kalender</h1><p class="sub">Geser untuk pindah minggu, ketuk tanggal untuk melihat tugasnya</p></header>
+    <div class="cal" id="cal">
+      <div class="calh"><button class="ibtn" id="cPrev" aria-label="Sebelumnya"><span data-i="l"></span></button><b id="cTitle"></b><button class="ibtn" id="cNext" aria-label="Berikutnya"><span data-i="r"></span></button></div>
+      <div class="wk"><span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span></div>
+      <div class="grid" id="cGrid"></div>
+      <button class="cexp" id="cExp">Perluas ke bulan</button>
+    </div>
+    <h2 class="dh" id="dayT"></h2>
+    <div class="gl" id="dayList"></div>
+  </section>
+
+  <section class="pg" id="pFocus">
+    <header class="head"><h1>Fokus</h1><p class="sub">Satu sesi 25 menit untuk satu tugas</p></header>
+    <select id="fTask" class="fsel" aria-label="Pilih tugas"></select>
+    <div class="ring">
+      <svg viewBox="0 0 260 260"><circle class="tr" cx="130" cy="130" r="114"/><circle class="pr" id="pr" cx="130" cy="130" r="114"/></svg>
+      <div class="clock" id="clock">25:00</div>
+    </div>
+    <div class="ctl"><button class="btnp" id="fBtn">Mulai fokus</button><button class="btng" id="fRst">Reset</button></div>
+    <div class="stats">
+      <div class="sc"><b id="fTodayN">0</b><span>Sesi hari ini</span></div>
+      <div class="sc"><b id="fWeekM">0</b><span>Menit fokus minggu ini</span></div>
+    </div>
+  </section>
+
+  <section class="pg" id="pMine">
+    <header class="head"><h1>Saya</h1><p class="sub">Ringkasan produktivitas dan pengaturan</p></header>
+    <div class="stats">
+      <div class="sc"><b id="sTot">0</b><span>Total tugas</span></div>
+      <div class="sc"><b id="sDone">0</b><span>Selesai</span></div>
+      <div class="sc"><b id="sPend">0</b><span>Belum selesai</span></div>
+      <div class="sc"><b id="sLate">0</b><span>Terlambat</span></div>
+    </div>
+    <div class="card ch">
+      <div class="chh"><div><b>Penyelesaian</b><p class="sub" id="sPct">0% selesai</p></div><div class="seg" id="rng"><button class="on" data-r="7">7 hari</button><button data-r="28">4 minggu</button></div></div>
+      <div class="chart" id="chart"></div>
+    </div>
+    <h2 class="sec">Tema warna</h2>
+    <div class="card set"><div class="acc" id="acc"></div></div>
+    <h2 class="sec">Preferensi</h2>
+    <div class="card set">
+      <div class="sr"><div><b>Mode gelap</b><small>Tampilan slate yang lembut di mata</small></div><input type="checkbox" class="sw" id="sDark" aria-label="Mode gelap"></div>
+      <div class="sr"><div><b>Suara alarm</b><small>Bunyi saat pengingat tiba</small></div><input type="checkbox" class="sw" id="sSound" aria-label="Suara alarm"></div>
+      <div class="sr"><div><b>Notifikasi</b><small>Pop-up saat aplikasi terbuka</small></div><button class="btng mini" id="nBtn">Aktifkan</button></div>
+    </div>
+    <h2 class="sec">Data</h2>
+    <div class="card set">
+      <div class="sr"><div><b>Ekspor tugas</b><small>Simpan cadangan dalam format JSON</small></div><button class="btng mini" id="exBtn">Ekspor</button></div>
+      <div class="sr"><div><b>Impor cadangan</b><small>Pulihkan dari file JSON Taskly</small></div><button class="btng mini" id="imBtn">Impor</button></div>
+      <div class="sr"><div><b>Hapus semua tugas</b><small>Tindakan ini tidak bisa dibatalkan</small></div><button class="btng mini dng" id="clBtn">Hapus</button></div>
+    </div>
+  </section>
+</div>
+
+<nav class="nav" aria-label="Navigasi utama">
+  <button class="nv on" data-p="pTasks"><span data-i="tasks"></span>Tugas</button>
+  <button class="nv" data-p="pCal"><span data-i="cal"></span>Kalender</button>
+  <button class="fab" id="fab" aria-label="Tambah tugas"><span data-i="plus"></span></button>
+  <button class="nv" data-p="pFocus"><span data-i="timer"></span>Fokus</button>
+  <button class="nv" data-p="pMine"><span data-i="user"></span>Saya</button>
+</nav>
+
+<div class="ov" id="ov"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shT">
+  <div class="grab"></div>
+  <div class="sbody">
+    <div class="shh"><b id="shT">Tugas baru</b><button class="ibtn" id="shX" aria-label="Tutup"><span data-i="x"></span></button></div>
+    <input class="qt" id="fTitle" placeholder="Apa yang perlu dikerjakan?" maxlength="120" autocomplete="off" enterkeyhint="done">
+    <div class="pn" id="pDate">
+      <div class="row2"><div><label for="fDate">Tanggal</label><input type="date" id="fDate"></div><div><label for="fTime">Jam</label><input type="time" id="fTime"></div></div>
+      <label for="fRem">Ingatkan</label>
+      <select id="fRem"><option value="0">Tepat waktu</option><option value="5">5 menit sebelumnya</option><option value="15">15 menit sebelumnya</option><option value="30">30 menit sebelumnya</option><option value="60">1 jam sebelumnya</option></select>
+    </div>
+    <div class="pn" id="pSub">
+      <div id="subList"></div>
+      <input id="subIn" maxlength="80" placeholder="Tulis sub-tugas, lalu tekan Enter" autocomplete="off" style="margin-top:6px">
+    </div>
+    <div class="pn" id="pDet">
+      <label for="fNotes">Catatan</label><textarea id="fNotes" rows="2" placeholder="Instruksi atau detail tugas"></textarea>
+      <label for="fLabel">Label atau mata pelajaran</label><input id="fLabel" maxlength="24" placeholder="Contoh: Matematika">
+      <label>Warna label</label><div class="cols" id="cols"></div>
+      <label>Prioritas</label>
+      <div class="seg" id="prio"><button type="button" data-p="Low">Rendah</button><button type="button" data-p="Medium">Sedang</button><button type="button" data-p="High">Tinggi</button></div>
+      <div id="gWrap" class="hide">
+        <label for="gName">Nama kelompok</label><input id="gName" placeholder="Kelompok 2, Web Project">
+        <label for="gMem">Anggota, dipisah koma</label><textarea id="gMem" rows="2" placeholder="Andi, Budi, Siska"></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="tb" id="tb">
+    <button type="button" data-x="cat"><span data-i="user"></span><span id="xCat">Individu</span></button>
+    <button type="button" data-x="date"><span data-i="cal"></span><span id="xDate">Hari ini</span></button>
+    <button type="button" data-x="rep"><span data-i="rep"></span><span id="xRep">Tidak berulang</span></button>
+    <button type="button" data-x="star"><span data-i="star"></span>Penting</button>
+    <button type="button" data-x="sub"><span data-i="list"></span><span id="xSub">Sub-tugas</span></button>
+    <label id="photoLbl"><span data-i="photo"></span><span id="xPhoto">Foto</span><input type="file" id="fPhoto" accept="image/*" hidden></label>
+    <button type="button" data-x="det"><span data-i="note"></span>Detail</button>
+  </div>
+  <div class="phw hide" id="phw"><img id="ph" alt="Lampiran"><button type="button" id="phDel">Hapus foto</button></div>
+  <button class="btnp" id="fSave">Simpan tugas</button>
+  <button class="btng mini dng hide" id="fDel" style="width:100%;margin-top:8px">Hapus tugas</button>
+</div>
+
+<div class="dlg" id="alarm" role="alertdialog" aria-live="assertive">
+  <div class="bell"><span data-i="bell"></span></div>
+  <b id="aT" style="font-size:18px;display:block"></b>
+  <p class="sub" id="aD" style="margin:6px 0 18px"></p>
+  <button class="btnp" id="aOff">Matikan alarm</button>
+</div>
+<div class="vw" id="vw"><button class="ibtn" aria-label="Tutup"><span data-i="x"></span></button><img id="vImg" alt="Lampiran"></div>
+<input type="file" id="imFile" accept="application/json,.json" hidden>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+const LC={blue:'#007aff',purple:'#af52de',pink:'#ff2d55',red:'#ff3b30',orange:'#ff9500',green:'#34c759',teal:'#30b0c7',gray:'#8e8e93'};
+const ACC={rb:['Royal Blue','#3b5bdb'],sg:['Sage Green','#6f9a76'],sc:['Soft Coral','#ef8474'],lv:['Lavender','#8f7bd1'],cs:['Classic Slate','#56657a']};
+const REP={none:'Tidak berulang',daily:'Harian',weekly:'Mingguan',monthly:'Bulanan'};
+const PRI={Low:'Rendah',Medium:'Sedang',High:'Tinggi'};
+const NAMES={late:'Terlambat',today:'Hari ini',up:'Mendatang',done:'Selesai'};
+const PAL=['#3b5bdb','#6f9a76','#ef8474','#8f7bd1','#f0a020','#30b0c7'];
+const FL=1500,CIRC=2*Math.PI*114;
+const ICO={
+tasks:'<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>',
+cal:'<rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/>',
+user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',
+star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+down:'<path d="M6 9l6 6 6-6"/>',
+l:'<path d="M15 18l-6-6 6-6"/>',
+r:'<path d="M9 18l6-6-6-6"/>',
+search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+x:'<path d="M6 6l12 12M18 6L6 18"/>',
+rep:'<path d="M17 2l4 4-4 4M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 0 1-4 4H3"/>',
+list:'<path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>',
+photo:'<rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="12" cy="12" r="3.5"/>',
+note:'<path d="M5 4h14v12l-4 4H5z"/><path d="M9 9h6M9 13h4"/>',
+bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/>'
+};
+
+const $=id=>document.getElementById(id);
+const ic=n=>`<svg viewBox="0 0 24 24" aria-hidden="true">${ICO[n]||''}</svg>`;
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today=()=>iso(new Date());
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const due=t=>new Date(`${t.dueDate}T${t.dueTime||'23:59'}:00`);
+const late=t=>!t.completed&&due(t)<new Date();
+const grp=t=>t.completed?'done':late(t)?'late':t.dueDate===today()?'today':'up';
+const byUrg=(a,b)=>(b.starred-a.starred)||(due(a)-due(b));
+const fmtD=(s,o={weekday:'long',day:'numeric',month:'long'})=>new Date(s+'T12:00:00').toLocaleDateString('id-ID',o);
+const nextDate=(s,r)=>{const d=new Date(s+'T12:00:00');if(r==='daily')d.setDate(d.getDate()+1);else if(r==='weekly')d.setDate(d.getDate()+7);else d.setMonth(d.getMonth()+1);return iso(d);};
+const buzz=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+const J=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}};
+const LS=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const safeName=s=>String(s).replace(/[\\/:*?"<>|]+/g,'_').slice(0,60);
+const greet=()=>{const h=new Date().getHours();return h<11?'Selamat pagi':h<15?'Selamat siang':h<19?'Selamat sore':'Selamat malam';};
+const groupTxt=t=>`TUGAS KELOMPOK: ${t.title}\nKelompok: ${t.groupInfo?.name||'-'}\nDeadline: ${t.dueDate} ${t.dueTime}\nAnggota: ${(t.groupInfo?.members||[]).join(', ')||'-'}\nCatatan: ${t.notes||'-'}`;
+const focusLog=()=>{const v=J('taskly_focus',[]);return Array.isArray(v)?v:[];};
+
+function norm(t){return{...t,id:t.id??Date.now()+Math.random(),title:String(t.title||'Tugas'),type:t.type==='Kelompok'?'Kelompok':'Individu',dueDate:t.dueDate||today(),dueTime:t.dueTime||'23:59',notes:String(t.notes||''),image:typeof t.image==='string'?t.image:'',completed:!!t.completed,alarmTriggered:!!t.alarmTriggered,priority:PRI[t.priority]?t.priority:'Medium',reminderLead:Number(t.reminderLead)||0,label:String(t.label||''),color:LC[t.color]?t.color:'',subtasks:(Array.isArray(t.subtasks)?t.subtasks:[]).map(s=>({id:s.id||uid(),text:String(s.text||''),done:!!s.done})).filter(s=>s.text),groupInfo:t.groupInfo?{name:String(t.groupInfo.name||'Kelompok'),members:Array.isArray(t.groupInfo.members)?t.groupInfo.members:[]}:null,starred:!!t.starred,repeat:REP[t.repeat]&&t.repeat!=='none'?t.repeat:'none',doneAt:t.doneAt||null};}
+
+let tasks=(Array.isArray(J('my_tasks',[]))?J('my_tasks',[]):[]).map(norm);
+let dark=localStorage.getItem('taskly_theme')==='dark',soundOn=localStorage.getItem('taskly_sound')!=='false',accK=localStorage.getItem('taskly_accent')||'rb';
+let filt='all',q='',calSel=today(),calMode='week',calX=0,rng=7,edit=null,dr=null,ctx=null,ftk=0,alarmTk=0,sw=null,tTimer=0,parts=[],raf=0;
+const OPEN={late:true,today:true,up:true,done:false},subOpen=new Set();
+let fl={left:FL,end:0,run:false};
+const dlP=(async()=>{try{return(await window.claude?.use('downloads'))??null}catch(e){return null}})();
+
+function save(){try{localStorage.setItem('my_tasks',JSON.stringify(tasks))}catch(e){toast('Penyimpanan penuh, hapus lampiran foto lama')}renderAll();}
+function toast(m,undo){const el=$('toast');el.innerHTML=esc(m)+(undo?'<button type="button">Urungkan</button>':'');if(undo)el.querySelector('button').onclick=()=>{el.classList.remove('on');undo();};el.classList.add('on');clearTimeout(tTimer);tTimer=setTimeout(()=>el.classList.remove('on'),undo?4500:2400);}
+function fire(n,msg){if(msg)toast(msg);buzz(14);if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const cv=$('cf');cv.width=innerWidth;cv.height=innerHeight;for(let i=0;i<n;i++)parts.push({x:innerWidth/2+(Math.random()-.5)*120,y:innerHeight*.7,vx:(Math.random()-.5)*12,vy:-Math.random()*13-5,r:Math.random()*6,vr:(Math.random()-.5)*.3,s:6+Math.random()*5,c:PAL[i%PAL.length],l:70+Math.random()*30});if(!raf)raf=requestAnimationFrame(step);}
+function step(){const cv=$('cf'),cx=cv.getContext('2d');cx.clearRect(0,0,cv.width,cv.height);parts=parts.filter(p=>p.l>0);for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.vy+=.35;p.vx*=.99;p.r+=p.vr;p.l--;cx.save();cx.globalAlpha=Math.min(1,p.l/25);cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.c;cx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);cx.restore();}if(parts.length)raf=requestAnimationFrame(step);else{raf=0;}}
+
+function renderAll(){renderTasks();renderDay();renderCal();renderStats();renderFocusSel();paintSettings();}
+function visible(){const s=q.trim().toLowerCase();return tasks.filter(t=>{const hit=[t.title,t.notes,t.label,t.groupInfo?.name,...(t.groupInfo?.members||[])].join(' ').toLowerCase().includes(s);const ok={all:true,ind:t.type==='Individu',grp:t.type==='Kelompok',star:t.starred,today:t.dueDate===today(),up:t.dueDate>today()}[filt];return hit&&ok;});}
+function renderTasks(){
+  const G={late:[],today:[],up:[],done:[]};
+  visible().forEach(t=>G[grp(t)].push(t));
+  let h='';
+  for(const k of['late','today','up','done']){const a=G[k].sort(byUrg);if(!a.length)continue;
+    h+=`<section class="grp${OPEN[k]?'':' closed'}"><button class="gh${k==='late'?' late':''}" data-g="${k}">${NAMES[k]}<small>${a.length}</small>${ic('down')}</button><div class="gl">${a.map(card).join('')}</div></section>`;}
+  const f=q||filt!=='all';
+  $('groups').innerHTML=h||`<div class="empty">${ic('plus')}<b>${f?'Tidak ada yang cocok':'Belum ada tugas'}</b>${f?'Coba kata kunci atau filter lain.':'Ketuk tombol + untuk menambah tugas pertama.'}</div>`;
+  $('dateLbl').textContent=`${greet()}, ${fmtD(today())}`;
+}
+function card(t){
+  const subs=t.subtasks,sd=subs.filter(s=>s.done).length,pct=subs.length?Math.round(sd/subs.length*100):0,col=LC[t.color]||'',ms=(t.groupInfo?.members||[]).join(', ');
+  const tagStyle=col?`color:${col};background:${col}22`:'';
+  return `<article class="t${t.completed?' done':''}" data-id="${esc(t.id)}">
+<button class="ck${t.completed?' on':''}" data-a="chk" aria-label="Tandai selesai">${ic('check')}</button>
+<div class="bd" data-a="edit">
+<div class="tt">${esc(t.title)}</div>
+<div class="meta">${t.label?`<span class="tag" style="${tagStyle}">${esc(t.label)}</span>`:''}${late(t)?'<span class="tag late">Terlambat</span>':''}<span>${fmtD(t.dueDate,{weekday:'short',day:'numeric',month:'short'})}, ${esc(t.dueTime)}</span>${t.repeat!=='none'?`<span>${REP[t.repeat]}</span>`:''}</div>
+${subs.length?`<div class="bar"><i style="width:${pct}%"></i></div><button class="more" data-a="subs">${sd}/${subs.length} selesai</button>`:''}
+${subs.length&&subOpen.has(t.id)?`<div class="sl">${subs.map(s=>`<button class="si${s.done?' on':''}" data-a="sub" data-s="${esc(s.id)}"><span class="ck${s.done?' on':''}">${ic('check')}</span><span>${esc(s.text)}</span></button>`).join('')}</div>`:''}
+${t.notes?`<p class="nt">${esc(t.notes)}</p>`:''}
+${t.groupInfo?`<div class="grpi">${esc(t.groupInfo.name)}${ms?`: ${esc(ms)}`:''}<button data-a="grp">Unduh info</button></div>`:''}
+${t.image?`<img class="ph" src="${esc(t.image)}" alt="Lampiran" data-a="view">`:''}
+</div>
+<button class="star${t.starred?' on':''}" data-a="star" aria-label="Tandai penting" aria-pressed="${!!t.starred}">${ic('star')}</button>
+</article>`;
+}
+function act(e){
+  if(e.target.closest('[data-addday]')){openSheet(null,calSel);return;}
+  const g=e.target.closest('[data-g]');
+  if(g){OPEN[g.dataset.g]=!OPEN[g.dataset.g];renderTasks();return;}
+  const el=e.target.closest('[data-a]');if(!el)return;
+  const cd=el.closest('[data-id]');if(!cd)return;
+  const t=tasks.find(x=>String(x.id)===cd.dataset.id);if(!t)return;
+  switch(el.dataset.a){
+    case'chk':toggle(t);break;
+    case'star':t.starred=!t.starred;save();break;
+    case'edit':openSheet(t);break;
+    case'subs':if(subOpen.has(t.id))subOpen.delete(t.id);else subOpen.add(t.id);renderTasks();break;
+    case'sub':{const s=t.subtasks.find(x=>String(x.id)===el.dataset.s);if(!s)break;s.done=!s.done;if(s.done&&t.subtasks.every(x=>x.done))fire(36,'Semua sub-tugas beres');save();break;}
+    case'grp':saveFile(`Kelompok_${safeName(t.title)}.txt`,groupTxt(t));break;
+    case'view':viewer(t.image);break;
+  }
+}
+function toggle(t){
+  t.completed=!t.completed;t.doneAt=t.completed?new Date().toISOString():null;
+  if(t.completed){
+    t.alarmTriggered=true;t.subtasks.forEach(s=>s.done=true);
+    if(t.repeat!=='none')tasks.push({...t,id:Date.now()+Math.random(),completed:false,doneAt:null,alarmTriggered:false,dueDate:nextDate(t.dueDate,t.repeat),subtasks:t.subtasks.map(s=>({...s,id:uid(),done:false}))});
+    const td=tasks.filter(x=>x.dueDate===today()),dayAll=td.length>0&&td.every(x=>x.completed);
+    save();
+    if(dayAll)fire(110,'Target hari ini tercapai 🎉');else fire(40,'Tugas selesai ✓');
+  }else{save();toast('Tugas dibuka kembali');}
+}
+function del(t){const i=tasks.indexOf(t);tasks=tasks.filter(x=>x!==t);save();buzz(20);toast('Tugas dihapus',()=>{tasks.splice(Math.min(i,tasks.length),0,t);save();});}
+function swipeInit(){
+  document.addEventListener('pointerdown',e=>{const c=e.target.closest('.t');if(!c||e.target.closest('button,input,img,label'))return;sw={c,x:e.clientX,y:e.clientY,dx:0,on:false};});
+  document.addEventListener('pointermove',e=>{if(!sw)return;const dx=e.clientX-sw.x,dy=e.clientY-sw.y;
+    if(!sw.on){if(Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.5){sw.on=true;sw.c.classList.add('drag');}else if(Math.abs(dy)>12){sw=null;return;}}
+    if(sw&&sw.on){sw.dx=dx;sw.c.style.transform=`translateX(${dx*.9}px)`;}});
+  const end=()=>{if(!sw)return;const{c,dx,on}=sw;sw=null;if(!on)return;c.classList.remove('drag');c.style.transform='';
+    const t=tasks.find(x=>String(x.id)===c.dataset.id);if(!t)return;if(dx>90)toggle(t);else if(dx<-90)del(t);};
+  document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);
+}
+
+const shiftCal=dir=>{const d=new Date(calSel+'T12:00:00');if(calMode==='week')d.setDate(d.getDate()+7*dir);else{d.setDate(1);d.setMonth(d.getMonth()+dir);}calSel=iso(d);renderCal();renderDay();};
+function renderCal(){
+  const sel=new Date(calSel+'T12:00:00');let start,n=7;
+  if(calMode==='week'){start=new Date(sel);start.setDate(sel.getDate()-sel.getDay());}
+  else{const f=new Date(sel.getFullYear(),sel.getMonth(),1,12);start=new Date(f);start.setDate(1-f.getDay());n=42;}
+  const byDay={};tasks.forEach(t=>{(byDay[t.dueDate]=byDay[t.dueDate]||[]).push(t);});
+  let h='';
+  for(let i=0;i<n;i++){const d=new Date(start);d.setDate(start.getDate()+i);const s=iso(d),ts=byDay[s]||[],out=calMode==='month'&&d.getMonth()!==sel.getMonth();
+    h+=`<button class="dy${out?' out':''}${s===today()?' today':''}${s===calSel?' sel':''}" data-d="${s}" aria-label="${fmtD(s)}"><span>${d.getDate()}</span><span class="dots">${ts.slice(0,3).map(t=>`<i style="background:${LC[t.color]||'var(--ac)'}"></i>`).join('')}</span></button>`;}
+  $('cGrid').innerHTML=h;
+  $('cTitle').textContent=sel.toLocaleDateString('id-ID',{month:'long',year:'numeric'});
+  $('cExp').textContent=calMode==='week'?'Perluas ke bulan':'Ciutkan ke minggu';
+}
+function renderDay(){
+  const list=tasks.filter(t=>t.dueDate===calSel).sort(byUrg);
+  $('dayT').textContent=fmtD(calSel);
+  $('dayList').innerHTML=list.length?list.map(card).join(''):`<div class="empty">${ic('cal')}<b>Tidak ada tugas</b>Belum ada jadwal di tanggal ini.</div><button class="btnp" data-addday>Tambah tugas di tanggal ini</button>`;
+}
+
+function renderFocusSel(){const s=$('fTask'),cur=s.value;s.innerHTML='<option value="">Fokus bebas, tanpa tugas tertentu</option>'+tasks.filter(t=>!t.completed).sort(byUrg).map(t=>`<option value="${esc(t.id)}">${esc(t.title.slice(0,50))}</option>`).join('');s.value=cur;}
+function fRender(){
+  $('clock').textContent=`${pad(Math.floor(fl.left/60))}:${pad(fl.left%60)}`;
+  $('pr').style.strokeDashoffset=CIRC*(1-(FL-fl.left)/FL);
+  $('fBtn').textContent=fl.run?'Jeda':fl.left<FL?'Lanjutkan':'Mulai fokus';
+  const lg=focusLog(),wk=iso(new Date(Date.now()-6*864e5));
+  $('fTodayN').textContent=lg.filter(x=>x===today()).length;
+  $('fWeekM').textContent=lg.filter(x=>x>=wk).length*25;
+}
+function fToggle(){
+  if(fl.run){clearInterval(ftk);fl.left=Math.max(0,Math.ceil((fl.end-Date.now())/1000));fl.run=false;}
+  else{if(fl.left<=0)fl.left=FL;fl.end=Date.now()+fl.left*1000;fl.run=true;clearInterval(ftk);ftk=setInterval(fTick,250);}
+  fRender();
+}
+function fTick(){fl.left=Math.max(0,Math.ceil((fl.end-Date.now())/1000));if(fl.left<=0){fDone();return;}fRender();}
+function fDone(){clearInterval(ftk);fl={left:FL,end:0,run:false};LS('taskly_focus',JSON.stringify([...focusLog(),today()].slice(-400)));beep();buzz([200,100,200]);fire(60,'Sesi fokus selesai! Istirahat sejenak');notify('Taskly','Sesi fokus 25 menit selesai');fRender();}
+function fReset(){clearInterval(ftk);fl={left:FL,end:0,run:false};fRender();}
+
+function renderStats(){
+  const total=tasks.length,done=tasks.filter(t=>t.completed).length,lt=tasks.filter(late).length;
+  $('sTot').textContent=total;$('sDone').textContent=done;$('sPend').textContent=total-done;$('sLate').textContent=lt;
+  $('sPct').textContent=`${total?Math.round(done/total*100):0}% selesai dari seluruh tugas`;
+  const dk=t=>t.doneAt?iso(new Date(t.doneAt)):t.dueDate,cnt=k=>tasks.filter(t=>t.completed&&dk(t)===k).length,bars=[];
+  if(rng===7){for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const k=iso(d);bars.push({l:fmtD(k,{weekday:'short'}).slice(0,3),v:cnt(k)});}}
+  else{for(let w=3;w>=0;w--){let v=0;for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-w*7-i);v+=cnt(iso(d));}bars.push({l:w?`-${w}m`:'Ini',v});}}
+  const mx=Math.max(1,...bars.map(b=>b.v));
+  $('chart').innerHTML=bars.map(b=>`<div class="col"><b>${b.v||''}</b><span class="bw"><i style="height:${b.v?Math.max(8,b.v/mx*100):3}%"></i></span><small>${b.l}</small></div>`).join('');
+}
+function paintSettings(){document.querySelectorAll('#acc button').forEach(b=>b.classList.toggle('on',b.dataset.k===accK));$('sDark').checked=dark;$('sSound').checked=soundOn;}
+function setDark(v){dark=v;document.documentElement.dataset.theme=dark?'dark':'light';document.querySelector('meta[name=theme-color]').content=dark?'#1c1f26':'#f3f4f8';LS('taskly_theme',dark?'dark':'light');paintSettings();}
+function setAcc(k){accK=ACC[k]?k:'rb';document.documentElement.style.setProperty('--ac',ACC[accK][1]);LS('taskly_accent',accK);paintSettings();}
+function setSound(v){soundOn=v;LS('taskly_sound',String(v));if(v)ac();paintSettings();}
+
+function ac(){try{if(!ctx){const K=window.AudioContext||window.webkitAudioContext;if(!K)return null;ctx=new K();}if(ctx.state==='suspended')ctx.resume();return ctx;}catch(e){return null;}}
+function beep(){if(!soundOn)return;const x=ac();if(!x)return;try{const o=x.createOscillator(),g=x.createGain();o.frequency.value=880;g.gain.setValueAtTime(.2,x.currentTime);g.gain.exponentialRampToValueAtTime(.001,x.currentTime+.7);o.connect(g);g.connect(x.destination);o.start();o.stop(x.currentTime+.7);}catch(e){}}
+function notify(t,b){try{if('Notification' in window&&Notification.permission==='granted')new Notification(t,{body:b});}catch(e){}}
+async function askNotif(){try{if('Notification' in window){const r=await Notification.requestPermission();toast(r==='granted'?'Notifikasi aktif':'Notifikasi tidak diizinkan');}else toast('Browser ini tidak mendukung notifikasi');}catch(e){toast('Notifikasi tidak tersedia');}}
+function checkAlarm(){const now=Date.now();for(const t of tasks){if(t.completed||t.alarmTriggered)continue;const end=due(t).getTime(),at=end-t.reminderLead*6e4;if(now>=at&&now<=end+3e5){t.alarmTriggered=true;LS('my_tasks',JSON.stringify(tasks));ringAlarm(t);break;}}}
+function ringAlarm(t){$('aT').textContent=t.title;$('aD').textContent=`Deadline pukul ${t.dueTime} WIB`;$('alarm').classList.add('on');$('ov').classList.add('on');beep();clearInterval(alarmTk);alarmTk=setInterval(beep,1100);buzz([300,150,300]);notify(`Taskly, ${t.title}`,`Deadline pukul ${t.dueTime} WIB`);renderAll();}
+function stopAlarm(){clearInterval(alarmTk);$('alarm').classList.remove('on');$('ov').classList.remove('on');}
+async function saveFile(name,text){
+  const d=await dlP;
+  if(d){try{await d.save({filename:name,data:text});toast('File disimpan');return;}catch(e){if(e&&e.code==='declined'){toast('Penyimpanan dibatalkan');return;}}}
+  try{await navigator.clipboard.writeText(text);toast('Data disalin ke papan klip');}catch(e){toast('Penyimpanan file tidak tersedia di sini');}
+}
+async function importFile(e){const f=e.target.files?.[0];if(!f)return;try{const d=JSON.parse(await f.text());const arr=Array.isArray(d)?d:d.tasks;if(!Array.isArray(arr))throw 0;tasks=arr.map(norm);save();toast('Data dipulihkan');}catch(err){toast('File tidak valid');}finally{e.target.value='';}}
+function viewer(src){$('vImg').src=src;$('vw').classList.add('on');}
+
+function go(p){
+  document.querySelectorAll('.pg').forEach(s=>s.classList.toggle('on',s.id===p));
+  document.querySelectorAll('.nv').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
+  if(p==='pCal'){renderCal();renderDay();}
+  if(p==='pFocus'){renderFocusSel();fRender();}
+  if(p==='pMine')renderStats();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function openSheet(t,day){
+  edit=t||null;
+  dr=t?{...t,subtasks:t.subtasks.map(s=>({...s})),groupInfo:t.groupInfo?{...t.groupInfo,members:[...t.groupInfo.members]}:null}:{title:'',type:'Individu',dueDate:day||today(),dueTime:'23:59',repeat:'none',starred:false,subtasks:[],image:'',color:'',priority:'Medium',notes:'',label:'',reminderLead:15,groupInfo:null};
+  $('shT').textContent=edit?'Edit tugas':'Tugas baru';
+  $('fSave').textContent=edit?'Simpan perubahan':'Simpan tugas';
+  $('fDel').classList.toggle('hide',!edit);
+  $('fTitle').value=dr.title;$('fDate').value=dr.dueDate;$('fTime').value=dr.dueTime;
+  $('fRem').value=[0,5,15,30,60].includes(dr.reminderLead)?String(dr.reminderLead):'15';
+  $('fNotes').value=dr.notes||'';$('fLabel').value=dr.label||'';
+  $('gName').value=dr.groupInfo?.name||'';$('gMem').value=(dr.groupInfo?.members||[]).join(', ');
+  document.querySelectorAll('.pn').forEach(p=>p.classList.remove('on'));
+  paintSheet();
+  $('sheet').classList.add('on');$('ov').classList.add('on');
+  if(!edit)setTimeout(()=>$('fTitle').focus(),350);
+}
+function closeSheet(){$('sheet').classList.remove('on');$('ov').classList.remove('on');edit=null;}
+function paintSheet(){
+  const isG=dr.type==='Kelompok',n=dr.subtasks.length;
+  const on={cat:isG,date:$('pDate').classList.contains('on'),rep:dr.repeat!=='none',star:dr.starred,sub:$('pSub').classList.contains('on')||n>0,det:$('pDet').classList.contains('on')};
+  $('xCat').textContent=isG?'Kelompok':'Individu';
+  $('xDate').textContent=`${dr.dueDate===today()?'Hari ini':fmtD(dr.dueDate,{day:'numeric',month:'short'})}, ${dr.dueTime}`;
+  $('xRep').textContent=REP[dr.repeat];
+  $('xSub').textContent=n?`Sub-tugas (${n})`:'Sub-tugas';
+  $('xPhoto').textContent=dr.image?'Ganti foto':'Foto';
+  document.querySelectorAll('#tb [data-x]').forEach(b=>b.classList.toggle('on',!!on[b.dataset.x]));
+  $('photoLbl').classList.toggle('on',!!dr.image);
+  $('gWrap').classList.toggle('hide',!isG);
+  $('phw').classList.toggle('hide',!dr.image);
+  if(dr.image)$('ph').src=dr.image;
+  document.querySelectorAll('#cols button').forEach(b=>b.classList.toggle('on',b.dataset.c===(dr.color||'')));
+  document.querySelectorAll('#prio button').forEach(b=>b.classList.toggle('on',b.dataset.p===dr.priority));
+  $('subList').innerHTML=dr.subtasks.map(s=>`<div class="sub-row"><span>${esc(s.text)}</span><button type="button" data-rm="${esc(s.id)}" aria-label="Hapus sub-tugas">×</button></div>`).join('');
+}
+function saveSheet(){
+  const title=$('fTitle').value.trim();
+  if(!title){toast('Isi nama tugas dulu');$('fTitle').focus();return;}
+  const v={...dr,title,dueDate:dr.dueDate||today(),dueTime:dr.dueTime||'23:59',notes:$('fNotes').value.trim(),label:$('fLabel').value.trim(),reminderLead:Number($('fRem').value)||0,groupInfo:dr.type==='Kelompok'?{name:$('gName').value.trim()||'Kelompok',members:$('gMem').value.split(',').map(x=>x.trim()).filter(Boolean)}:null};
+  if(edit){if(edit.dueDate!==v.dueDate||edit.dueTime!==v.dueTime)v.alarmTriggered=false;Object.assign(edit,norm({...edit,...v}));toast('Perubahan disimpan');}
+  else{tasks.push(norm({...v,id:Date.now()+Math.random(),completed:false,alarmTriggered:false}));toast('Tugas ditambahkan');}
+  closeSheet();save();
+}
+
+function init(){
+  document.querySelectorAll('[data-i]').forEach(el=>el.innerHTML=ic(el.dataset.i));
+  $('acc').innerHTML=Object.entries(ACC).map(([k,v])=>`<button type="button" data-k="${k}" style="--c:${v[1]}" aria-label="${v[0]}" title="${v[0]}"></button>`).join('');
+  $('cols').innerHTML=`<button type="button" data-c="" style="--c:var(--mut)" aria-label="Tanpa warna"></button>`+Object.entries(LC).map(([k,v])=>`<button type="button" data-c="${k}" style="--c:${v}" aria-label="${k}"></button>`).join('');
+  $('pr').style.strokeDasharray=CIRC;
+  setDark(dark);setAcc(accK);
+  renderAll();fRender();
+
+  document.querySelectorAll('.nv').forEach(b=>b.onclick=()=>go(b.dataset.p));
+  $('fab').onclick=()=>openSheet(null);
+  $('groups').addEventListener('click',act);$('dayList').addEventListener('click',act);
+  $('q').addEventListener('input',e=>{q=e.target.value;renderTasks();});
+  $('chips').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(!b)return;filt=b.dataset.f;document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));renderTasks();});
+  $('cPrev').onclick=()=>shiftCal(-1);$('cNext').onclick=()=>shiftCal(1);
+  $('cExp').onclick=()=>{calMode=calMode==='week'?'month':'week';renderCal();};
+  $('cGrid').addEventListener('click',e=>{const b=e.target.closest('[data-d]');if(!b)return;calSel=b.dataset.d;renderCal();renderDay();});
+  $('cal').addEventListener('pointerdown',e=>{calX=e.clientX;});
+  $('cal').addEventListener('pointerup',e=>{const dx=e.clientX-calX;if(Math.abs(dx)>48)shiftCal(dx<0?1:-1);});
+  $('fBtn').onclick=fToggle;$('fRst').onclick=fReset;
+  $('rng').addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(!b)return;rng=Number(b.dataset.r);document.querySelectorAll('#rng button').forEach(x=>x.classList.toggle('on',x===b));renderStats();});
+  $('acc').addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(b)setAcc(b.dataset.k);});
+  $('sDark').onchange=e=>setDark(e.target.checked);
+  $('sSound').onchange=e=>setSound(e.target.checked);
+  $('nBtn').onclick=askNotif;
+  $('exBtn').onclick=()=>saveFile(`Taskly_Backup_${today()}.json`,JSON.stringify({app:'Taskly',tasks},null,2));
+  $('imBtn').onclick=()=>$('imFile').click();
+  $('imFile').onchange=importFile;
+  $('clBtn').onclick=()=>{if(confirm('Hapus semua tugas?')){tasks=[];save();toast('Semua tugas dihapus');}};
+
+  $('tb').addEventListener('click',e=>{const b=e.target.closest('[data-x]');if(!b)return;const x=b.dataset.x;
+    if(x==='cat'){dr.type=dr.type==='Kelompok'?'Individu':'Kelompok';if(dr.type==='Kelompok')$('pDet').classList.add('on');}
+    else if(x==='date')$('pDate').classList.toggle('on');
+    else if(x==='rep'){const k=Object.keys(REP),i=k.indexOf(dr.repeat);dr.repeat=k[(i+1)%k.length];}
+    else if(x==='star')dr.starred=!dr.starred;
+    else if(x==='sub'){$('pSub').classList.toggle('on');if($('pSub').classList.contains('on'))setTimeout(()=>$('subIn').focus(),50);}
+    else if(x==='det')$('pDet').classList.toggle('on');
+    paintSheet();});
+  $('fTitle').addEventListener('keydown',e=>{if(e.key==='Enter'&&!edit){e.preventDefault();$('fSave').click();}});
+  $('fDate').addEventListener('change',e=>{dr.dueDate=e.target.value||today();paintSheet();});
+  $('fTime').addEventListener('change',e=>{dr.dueTime=e.target.value||'23:59';paintSheet();});
+  $('subIn').addEventListener('keydown',e=>{if(e.key!=='Enter')return;e.preventDefault();const v=e.target.value.trim();if(!v)return;dr.subtasks.push({id:uid(),text:v,done:false});e.target.value='';paintSheet();});
+  $('subList').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;dr.subtasks=dr.subtasks.filter(s=>s.id!==b.dataset.rm);paintSheet();});
+  $('cols').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(!b)return;dr.color=b.dataset.c;paintSheet();});
+  $('prio').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;dr.priority=b.dataset.p;paintSheet();});
+  $('fPhoto').addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const sc=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext('2d').drawImage(im,0,0,c.width,c.height);dr.image=c.toDataURL('image/jpeg',.8);paintSheet();};im.src=r.result;};r.readAsDataURL(f);e.target.value='';});
+  $('phDel').onclick=()=>{dr.image='';paintSheet();};
+  $('fSave').onclick=saveSheet;
+  $('fDel').onclick=()=>{if(edit){const t=edit;closeSheet();del(t);}};
+  $('shX').onclick=closeSheet;
+  $('ov').onclick=()=>{if(!$('alarm').classList.contains('on'))closeSheet();};
+  $('aOff').onclick=stopAlarm;
+  $('vw').onclick=()=>$('vw').classList.remove('on');
+
+  if(window.visualViewport){const vv=visualViewport,fit=()=>{$('sheet').style.bottom=Math.max(0,innerHeight-vv.height-vv.offsetTop)+'px';$('sheet').style.maxHeight=(vv.height*.9)+'px';};vv.addEventListener('resize',fit);vv.addEventListener('scroll',fit);}
+  const sbClose=()=>{$('sb').classList.remove('open');$('sbBtn').setAttribute('aria-expanded','false');};
+  $('sbBtn').onclick=e=>{e.stopPropagation();const o=$('sb').classList.toggle('open');$('sbBtn').setAttribute('aria-expanded',String(o));};
+  $('sbMenu').addEventListener('click',sbClose);
+  document.addEventListener('click',e=>{if(!$('sb').contains(e.target))sbClose();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')sbClose();});
+  swipeInit();
+  document.addEventListener('pointerdown',()=>ac(),{once:true});
+  setInterval(checkAlarm,4000);setInterval(renderAll,60000);checkAlarm();
+}
+init();
+</script>
+</body>
+</html>
